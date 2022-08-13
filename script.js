@@ -1,6 +1,6 @@
 function httpGet(url) {
     var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", url, false); // false for synchronous request
+    xmlHttp.open("GET", url, false); // False for synchronous request
     xmlHttp.send(null);
     return xmlHttp.responseText;
 }
@@ -20,7 +20,7 @@ async function updateDatabase()
         heroList.push(heroTable[i].getAttribute("data-order"));
     }
 
-    // Get a list of hero data.
+    // Get a list of all the hero data.
     // [heroName, position, playRate, winRate]
     let heroData = []
     for(let i = 0; i < heroList.length; i++)
@@ -49,6 +49,20 @@ async function updateDatabase()
 
             heroData.push([heroList[i], role, roleStats[0], roleStats[1]]);
         }
+    }
+    query("DROP SCHEMA dota2database;");
+    query("CREATE SCHEMA dota2database;");
+    query("USE dota2database;");
+    query(`CREATE TABLE heroList (
+            Hero VARCHAR(255)
+            Position VARCHAR(255)
+            Playrate VARCHAR(255)
+            Winrate VARCHAR(255)
+            );`);
+
+    for (let i = 0; i < heroData.length; i++)
+    {
+        console.log(query("INSERT INTO `heroList` VALUES ('" + heroData[0] + "' , '" + heroData[1] + "', '" + heroData[2] + "', '" + heroData[3] + "');"));
     }
 
 
