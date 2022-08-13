@@ -1,12 +1,21 @@
 function httpGet(url) {
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", url, false); // False for synchronous request
-    xmlHttp.send(null);
-    return xmlHttp.responseText;
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("GET", url, false); // False for synchronous request
+    xhttp.send(null);
+    return xhttp.responseText;
+}
+
+function queryServer(url, dataType, data)
+{
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("POST", url + "/" + dataType, false);
+    xhttp.send(data);
+    return xhttp.responseText;
 }
 
 async function updateDatabase()
 {
+    console.log("Updating...");
     let parser = new DOMParser();
     let html = httpGet("https://dota2protracker.com/");
     let htmlDoc = parser.parseFromString(html, 'text/html');
@@ -50,20 +59,21 @@ async function updateDatabase()
             heroData.push([heroList[i], role, roleStats[0], roleStats[1]]);
         }
     }
-    query("DROP SCHEMA dota2database;");
-    query("CREATE SCHEMA dota2database;");
-    query("USE dota2database;");
-    query(`CREATE TABLE heroList (
-            Hero VARCHAR(255)
-            Position VARCHAR(255)
-            Playrate VARCHAR(255)
-            Winrate VARCHAR(255)
-            );`);
+
+    let queryStr = `DROP SCHEMA IF EXISTS dota2database;
+                    CREATE SCHEMA dota2database;
+                    USE dota2database;
+                    CREATE TABLE heroList (
+                        Hero VARCHAR(255)
+                        Position VARCHAR(255)
+                        Playrate VARCHAR(255)
+                        Winrate VARCHAR(255)
+                    );`
 
     for (let i = 0; i < heroData.length; i++)
     {
-        console.log(query("INSERT INTO `heroList` VALUES ('" + heroData[0] + "' , '" + heroData[1] + "', '" + heroData[2] + "', '" + heroData[3] + "');"));
+        queryStr += "INSERT INTO heroList VALUES ('" + heroData[0] + "' , '" + heroData[1] + "', '" + heroData[2] + "', '" + heroData[3] + "');";
     }
 
-
+    queryServer("localhost:3000", "update", queryStr);
 }
